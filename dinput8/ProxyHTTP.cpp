@@ -6,7 +6,7 @@ using namespace asio;
 using ip::tcp;
 
 ProxyHTTP::ProxyHTTP(io_service& ioService, const USHORT port, const std::shared_ptr<HttpClient>& http):
-	acceptor_(ioService, tcp::endpoint(tcp::v4(), port))
+	acceptor_(ioService, tcp::endpoint(asio::ip::address_v4::loopback(), port))
 {
 	BOOST_LOG_FUNCTION();
 
