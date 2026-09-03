@@ -1,0 +1,151 @@
+name: Build BFBC2 Hook - audit test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/build-audit.yml"
+      - "dinput8/**"
+      - "vcpkg.json"
+      - ".gitmodules"
+      - "libs/openssl"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Win32 Release
+    runs-on: windows-2022
+    timeout-minutes: 60
+
+    env:
+      VCPKG_COMMIT: e99d87dcf02926bfd629560e11e156329d5720c1
+      VCPKG_DISABLE_METRICS: "1"
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Prepare pinned vcpkg
+        shell: pwsh
+        run: |
+          $vcpkgRoot = Join-Path $env:RUNNER_TEMP "vcpkg"
+
+          git init $vcpkgRoot
+          git -C $vcpkgRoot remote add origin https://github.com/microsoft/vcpkg.git
+          git -C $vcpkgRoot fetch --depth 1 origin $env:VCPKG_COMMIT
+          git -C $vcpkgRoot checkout --detach FETCH_HEAD
+
+          & "$vcpkgRoot\bootstrap-vcpkg.bat" -disableMetrics
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          & "$vcpkgRoot\vcpkg.exe" integrate install
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Install vcpkg dependencies
+        shell: pwsh
+        run: |
+          & "$env:VCPKG_ROOT\vcpkg.exe" install --triplet x86-windows-static-md
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build OpenSSL 1.0.2u and BFBC2 Hook
+        shell: cmd
+        run: |
+          @echo on
+
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set "VSINSTALL=%%i"
+          if not defined VSINSTALL (
+            echo Visual Studio C++ toolchain not found.
+            exit /b 10
+          )
+
+          call "%VSINSTALL%\Common7\Tools\VsDevCmd.bat" -arch=x86 -host_arch=x64
+          if errorlevel 1 exit /b 11
+
+          echo === MSVC ===
+          where cl
+          cl 2>&1
+
+          echo === Perl ===
+          where perl
+          if errorlevel 1 (
+            echo Perl not found on runner.
+            exit /b 12
+          )
+          perl -v
+
+          echo === Build OpenSSL 1.0.2u ===
+          pushd libs\openssl
+
+          perl Configure VC-WIN32 no-asm --prefix="%GITHUB_WORKSPACE%\dependencies\openssl" enable-ssl2 enable-ssl3
+          if errorlevel 1 exit /b 20
+
+          call ms\do_ms
+          if errorlevel 1 exit /b 21
+
+          nmake -f ms\ntdll.mak
+          if errorlevel 1 exit /b 22
+
+          nmake -f ms\ntdll.mak test
+          if errorlevel 1 exit /b 23
+
+          nmake -f ms\ntdll.mak install
+          if errorlevel 1 exit /b 24
+
+          popd
+
+          echo === Build BFBC2 Hook ===
+          msbuild BFBC2_Hook.sln /m /t:Rebuild /p:Configuration=Release /p:Platform=Win32
+          if errorlevel 1 exit /b 30
+
+          echo === Restore runtime OpenSSL DLLs removed by the vcpkg migration ===
+          copy /Y dependencies\openssl\bin\libeay32.dll Release\libeay32.dll
+          if errorlevel 1 exit /b 31
+
+          copy /Y dependencies\openssl\bin\ssleay32.dll Release\ssleay32.dll
+          if errorlevel 1 exit /b 32
+
+          echo === Inspect produced dinput8.dll ===
+          dumpbin /headers Release\dinput8.dll > Release\dinput8-headers.txt
+          if errorlevel 1 exit /b 33
+
+          dumpbin /imports Release\dinput8.dll > Release\dinput8-imports.txt
+          if errorlevel 1 exit /b 34
+
+      - name: Create audit metadata
+        shell: pwsh
+        run: |
+          git rev-parse HEAD | Set-Content -Encoding ascii Release\SOURCE_COMMIT.txt
+          git submodule status --recursive | Set-Content -Encoding ascii Release\SUBMODULES.txt
+
+          $hashLines = Get-ChildItem Release -Filter *.dll |
+            Sort-Object Name |
+            ForEach-Object {
+              $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+              "$hash *$($_.Name)"
+            }
+
+          $hashLines | Set-Content -Encoding ascii Release\SHA256SUMS.txt
+          Get-Content Release\SHA256SUMS.txt
+
+      - name: Upload audited build
+        uses: actions/upload-artifact@v4
+        with:
+          name: BFBC2_Hook-audit-build
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            Release/*.dll
+            Release/SHA256SUMS.txt
+            Release/SOURCE_COMMIT.txt
+            Release/SUBMODULES.txt
+            Release/dinput8-headers.txt
+            Release/dinput8-imports.txt
