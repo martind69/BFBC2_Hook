@@ -10,7 +10,7 @@ using ip::tcp;
 
 ProxyTCP::ProxyTCP(io_service& ioService, const USHORT port, const bool secure,
                    const std::shared_ptr<WebSocketClient>& ws) :
-	acceptor_(ioService, tcp::endpoint(tcp::v4(), port)), context_(asio::ssl::context::sslv23)
+	acceptor_(ioService, tcp::endpoint(asio::ip::address_v4::loopback(), port)), context_(asio::ssl::context::sslv23)
 {
 	BOOST_LOG_FUNCTION()
 
