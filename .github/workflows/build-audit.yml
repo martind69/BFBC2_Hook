@@ -103,7 +103,7 @@ jobs:
           popd
 
           echo === Build BFBC2 Hook ===
-          msbuild BFBC2_Hook.sln /m /t:Rebuild /p:Configuration=Release /p:Platform=Win32
+          msbuild BFBC2_Hook.sln /m /t:Rebuild /p:Configuration=Release /p:Platform=x86 /p:VcpkgRoot="%VCPKG_ROOT%\\"
           if errorlevel 1 exit /b 30
 
           echo === Restore runtime OpenSSL DLLs removed by the vcpkg migration ===
