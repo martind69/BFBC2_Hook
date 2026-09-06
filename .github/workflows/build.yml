@@ -1,12 +1,8 @@
 name: Build BFBC2 Hook
 
 on:
-  push:
-    branches:
-      - main
   release:
     types: [published]
-
   workflow_dispatch:
 
 jobs:

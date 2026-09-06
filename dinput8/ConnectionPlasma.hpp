@@ -7,10 +7,10 @@
 
 using socket_ssl = ssl::stream<boost::asio::ip::tcp::socket>;
 
-class ConnectionPlasma : public boost::enable_shared_from_this<ConnectionPlasma>, boost::asio::noncopyable
+class ConnectionPlasma : public boost::enable_shared_from_this<ConnectionPlasma>
 {
 public:
-	ConnectionPlasma(boost::asio::io_service& ioService, ssl::context& context, std::shared_ptr<WebSocketClient> ws);
+	ConnectionPlasma(boost::asio::io_context& ioService, ssl::context& context, std::shared_ptr<WebSocketClient> ws);
 	~ConnectionPlasma();
 
 	using pointer = boost::shared_ptr<ConnectionPlasma>;

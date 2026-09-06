@@ -1,10 +1,10 @@
 #pragma once
 #include "WebSocketClient.hpp"
 
-class ConnectionTheater : public boost::enable_shared_from_this<ConnectionTheater>, boost::noncopyable
+class ConnectionTheater : public boost::enable_shared_from_this<ConnectionTheater>
 {
 public:
-	ConnectionTheater(boost::asio::io_service& ioService, const std::shared_ptr<WebSocketClient>& ws);
+	ConnectionTheater(boost::asio::io_context& ioService, const std::shared_ptr<WebSocketClient>& ws);
 	~ConnectionTheater();
 
 	using pointer = boost::shared_ptr<ConnectionTheater>;

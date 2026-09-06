@@ -8,7 +8,7 @@
 using namespace boost::asio;
 using namespace ip;
 
-ConnectionPlasma::ConnectionPlasma(io_service& ioService, boost::asio::ssl::context& context,
+ConnectionPlasma::ConnectionPlasma(io_context& ioService, boost::asio::ssl::context& context,
                                    std::shared_ptr<WebSocketClient> ws) : gameSocket_(ioService, context), buffer_()
 {
 	BOOST_LOG_FUNCTION()
@@ -29,7 +29,7 @@ void ConnectionPlasma::Start()
 {
 	// Before reading stuff we have to do a handshake
 	gameSocket_.async_handshake(boost::asio::ssl::stream_base::server,
-	                            bind(&ConnectionPlasma::HandleHandshake, shared_from_this(), placeholders::error));
+	                            boost::bind(&ConnectionPlasma::HandleHandshake, shared_from_this(), placeholders::error));
 }
 
 void ConnectionPlasma::HandleHandshake(const boost::system::error_code& error)

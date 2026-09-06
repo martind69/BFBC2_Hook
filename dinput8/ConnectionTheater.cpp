@@ -4,7 +4,7 @@
 using namespace boost::asio;
 using namespace ip;
 
-ConnectionTheater::ConnectionTheater(io_service& ioService,
+ConnectionTheater::ConnectionTheater(io_context& ioService,
                                      const std::shared_ptr<WebSocketClient>& ws) : gameSocket_(ioService), buffer_()
 {
 	BOOST_LOG_FUNCTION()
@@ -28,7 +28,7 @@ void ConnectionTheater::Start()
 	});
 
 	gameSocket_.async_read_some(buffer(buffer_, USHRT_MAX),
-	                            bind(&ConnectionTheater::HandleRead, shared_from_this(),
+	                            boost::bind(&ConnectionTheater::HandleRead, shared_from_this(),
 	                                 placeholders::error,
 	                                 placeholders::bytes_transferred));
 }
