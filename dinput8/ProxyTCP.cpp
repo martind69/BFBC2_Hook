@@ -8,7 +8,7 @@ using namespace boost;
 using namespace asio;
 using ip::tcp;
 
-ProxyTCP::ProxyTCP(io_service& ioService, const USHORT port, const bool secure,
+ProxyTCP::ProxyTCP(io_context& ioService, const USHORT port, const bool secure,
                    const std::shared_ptr<WebSocketClient>& ws) :
 	acceptor_(ioService, tcp::endpoint(asio::ip::address_v4::loopback(), port)), context_(asio::ssl::context::sslv23)
 {

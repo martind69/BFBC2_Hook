@@ -5,7 +5,7 @@ using namespace boost;
 using namespace asio;
 using ip::tcp;
 
-HttpHandler::HttpHandler(io_service& ioService, const std::shared_ptr<HttpClient>& http) : game_socket_(ioService)
+HttpHandler::HttpHandler(io_context& ioService, const std::shared_ptr<HttpClient>& http) : game_socket_(ioService)
 {
 	BOOST_LOG_FUNCTION()
 

@@ -1,10 +1,17 @@
 {
   "dependencies": [
+    "boost-array",
+    "boost-asio",
     "boost-beast",
-	"boost-log",
+    "boost-bind",
+    "boost-date-time",
+    "boost-filesystem",
     "boost-foreach",
     "boost-format",
+    "boost-log",
     "boost-property-tree",
+    "boost-smart-ptr",
+    "boost-system",
     "detours"
   ]
 }

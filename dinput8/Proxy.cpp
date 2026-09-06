@@ -24,8 +24,8 @@ Proxy::Proxy()
 	{
 		try
 		{
-			// Create an io_service object for asynchronous I/O
-			io_service ioService;
+			// Create an io_context object for asynchronous I/O
+			io_context ioService;
 
 			USHORT plasmaPort;
 			USHORT theaterPort;
@@ -63,7 +63,7 @@ Proxy::Proxy()
 			new ProxyHTTP(ioService, HTTP_PORT, http);
 
 			BOOST_LOG_TRIVIAL(info) << "Finished initialization, ready for receiving incoming connections!";
-			ioService.run(); // Start the io_service
+			ioService.run(); // Start the io_context
 		}
 		catch (std::exception& e)
 		{

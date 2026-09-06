@@ -4,7 +4,7 @@
 class ProxyUDP
 {
 public:
-	ProxyUDP(boost::asio::io_service& ioService, USHORT port, const std::shared_ptr<WebSocketClient>& ws);
+	ProxyUDP(boost::asio::io_context& ioService, USHORT port, const std::shared_ptr<WebSocketClient>& ws);
 
 	boost::asio::ip::udp::socket socket;
 	boost::asio::ip::udp::endpoint remote_endpoint;

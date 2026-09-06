@@ -9,10 +9,10 @@ using namespace boost;
 using namespace asio;
 using ip::tcp;
 
-class ProxyTCP : asio::noncopyable
+class ProxyTCP
 {
 public:
-	ProxyTCP(io_service& ioService, USHORT port, bool secure, const std::shared_ptr<WebSocketClient>& ws);
+	ProxyTCP(io_context& ioService, USHORT port, bool secure, const std::shared_ptr<WebSocketClient>& ws);
 
 private:
 	ip::tcp::acceptor acceptor_;

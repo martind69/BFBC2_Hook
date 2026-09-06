@@ -5,7 +5,7 @@ using namespace boost;
 using namespace asio;
 using ip::udp;
 
-ProxyUDP::ProxyUDP(io_service& ioService, const USHORT port, const std::shared_ptr<WebSocketClient>& ws) : socket(
+ProxyUDP::ProxyUDP(io_context& ioService, const USHORT port, const std::shared_ptr<WebSocketClient>& ws) : socket(
 	ioService, udp::endpoint(asio::ip::address_v4::loopback(), port))
 {
 	BOOST_LOG_FUNCTION()

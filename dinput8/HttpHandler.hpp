@@ -4,7 +4,7 @@
 class HttpHandler : public boost::enable_shared_from_this<HttpHandler>, boost::noncopyable
 {
 public:
-	explicit HttpHandler(boost::asio::io_service& ioService, const std::shared_ptr<HttpClient>& http);
+	explicit HttpHandler(boost::asio::io_context& ioService, const std::shared_ptr<HttpClient>& http);
 
 	using pointer = boost::shared_ptr<HttpHandler>;
 

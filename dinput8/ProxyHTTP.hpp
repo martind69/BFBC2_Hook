@@ -2,10 +2,10 @@
 #include "HttpClient.hpp"
 #include "HttpHandler.hpp"
 
-class ProxyHTTP : boost::asio::noncopyable
+class ProxyHTTP
 {
 public:
-	ProxyHTTP(boost::asio::io_service& ioService, USHORT port, const std::shared_ptr<HttpClient>& http);
+	ProxyHTTP(boost::asio::io_context& ioService, USHORT port, const std::shared_ptr<HttpClient>& http);
 
 private:
 	boost::asio::ip::tcp::acceptor acceptor_;
