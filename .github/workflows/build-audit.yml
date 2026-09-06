@@ -13,7 +13,7 @@ on:
       - "libs/openssl"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -137,6 +137,21 @@ jobs:
           $hashLines | Set-Content -Encoding ascii Release\SHA256SUMS.txt
           Get-Content Release\SHA256SUMS.txt
 
+      - name: Create release package
+        shell: pwsh
+        run: |
+          $files = @(
+            "Release\\dinput8.dll",
+            "Release\\libeay32.dll",
+            "Release\\ssleay32.dll",
+            "Release\\SHA256SUMS.txt",
+            "Release\\SOURCE_COMMIT.txt",
+            "Release\\SUBMODULES.txt",
+            "Release\\dinput8-headers.txt",
+            "Release\\dinput8-imports.txt"
+          )
+          Compress-Archive -Path $files -DestinationPath BFBC2_Hook-audit-release.zip -Force
+
       - name: Upload audited build
         uses: actions/upload-artifact@v4
         with:
@@ -150,3 +165,29 @@ jobs:
             Release/SUBMODULES.txt
             Release/dinput8-headers.txt
             Release/dinput8-imports.txt
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2026.09.06-audit
+          name: BFBC2 Hook Hardened Audit Build 2026-09-06
+          target_commitish: ${{ github.sha }}
+          draft: false
+          prerelease: false
+          body: |
+            Hardened and reproducibly audited Win32 build.
+
+            Changes in this fork include:
+            - HTTP, TCP and UDP listeners restricted to IPv4 loopback (127.0.0.1)
+            - Boost.Asio compatibility updated for the pinned vcpkg dependency set
+            - obsolete upstream build workflow removed
+            - OpenSSL 1.0.2u built and tested in the audit workflow
+            - SHA-256 hashes, PE headers and import table included for verification
+
+            Source commit: ${{ github.sha }}
+          files: |
+            BFBC2_Hook-audit-release.zip
+            Release/dinput8.dll
+            Release/libeay32.dll
+            Release/ssleay32.dll
+            Release/SHA256SUMS.txt
